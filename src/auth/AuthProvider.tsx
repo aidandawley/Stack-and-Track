@@ -1,12 +1,11 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { auth, googleProvider } from "../lib/firebase";
 import {
   onAuthStateChanged,
-  signInWithPopup,
-  signOut,
+  signInWithRedirect,
+  signOut as fbSignOut,
   type User,
 } from "firebase/auth";
-
 
 type AuthCtx = {
   user: User | null;
@@ -22,17 +21,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => onAuthStateChanged(auth, (u) => { setUser(u); setLoading(false); }), []);
+  // Subscribe once; resolves loading after first auth event
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      setLoading(false);
+    });
+    return unsub;
+  }, []);
 
-  const signInGoogle = async () => { await signInWithPopup(auth, googleProvider); };
-  const signOutUser = async () => { await signOut(auth); };
+  const signInGoogle = async () => {
+    // redirect flow is more reliable across browsers/adblockers
+    await signInWithRedirect(auth, googleProvider);
+  };
+
+  const signOutUser = async () => {
+    await fbSignOut(auth);
+  };
+
   const getIdToken = async () => (user ? await user.getIdToken() : null);
 
-  return (
-    <Ctx.Provider value={{ user, loading, signInGoogle, signOutUser, getIdToken }}>
-      {children}
-    </Ctx.Provider>
+  const value = useMemo<AuthCtx>(
+    () => ({ user, loading, signInGoogle, signOutUser, getIdToken }),
+    [user, loading]
   );
+
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
 export function useAuth() {
