@@ -1,57 +1,80 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { auth, googleProvider } from "../lib/firebase";
+// src/auth/AuthProvider.tsx
+import * as React from "react";
 import {
-  onAuthStateChanged,
-  signInWithRedirect,
+  getAuth,
+  GoogleAuthProvider,
+  setPersistence,
+  browserLocalPersistence,
   signInWithPopup,
-  signOut as fbSignOut,
+  signInWithRedirect,
+  getRedirectResult,
+  onAuthStateChanged,
+  signOut,
+  getIdToken as _getIdToken,
   type User,
 } from "firebase/auth";
+import { app } from "../lib/firebase";
 
-type AuthCtx = {
+const auth = getAuth(app);
+
+type Ctx = {
   user: User | null;
   loading: boolean;
+  getIdToken: () => Promise<string | null>;
   signInGoogle: () => Promise<void>;
   signOutUser: () => Promise<void>;
-  getIdToken: () => Promise<string | null>;
 };
 
-const Ctx = createContext<AuthCtx | null>(null);
+const AuthCtx = React.createContext<Ctx>(null as any);
+export const useAuth = () => React.useContext(AuthCtx);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = React.useState<User | null>(null);
+  const [loading, setLoading] = React.useState(true);
 
-  // Subscribe once; resolves loading after first auth event
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-      setLoading(false);
-    });
-    return unsub;
+  React.useEffect(() => {
+    (async () => {
+      try {
+        await setPersistence(auth, browserLocalPersistence);
+        // consume redirect result if a popup was blocked
+        try { await getRedirectResult(auth); } catch {}
+      } finally {
+        const unsub = onAuthStateChanged(auth, (u) => {
+          setUser(u ?? null);
+          setLoading(false);
+        });
+        return () => unsub();
+      }
+    })();
   }, []);
 
-  const signInGoogle = async () => {
-    // redirect flow is more reliable across browsers/adblockers
-    await signInWithPopup(auth, googleProvider);
-  };
+  const signInGoogle = React.useCallback(async () => {
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
 
-  const signOutUser = async () => {
-    await fbSignOut(auth);
-  };
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (e: any) {
+      const code = e?.code ?? "";
+      // Safari / popup-blocked / iframe contexts -> fall back to redirect
+      if (
+        code === "auth/popup-blocked" ||
+        code === "auth/popup-closed-by-user" ||
+        code === "auth/operation-not-supported-in-this-environment"
+      ) {
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+      throw e;
+    }
+  }, []);
 
-  const getIdToken = async () => (user ? await user.getIdToken() : null);
+  const signOutUser = React.useCallback(async () => { await signOut(auth); }, []);
+  const getIdToken = React.useCallback(async () => auth.currentUser ? _getIdToken(auth.currentUser, true) : null, []);
 
-  const value = useMemo<AuthCtx>(
-    () => ({ user, loading, signInGoogle, signOutUser, getIdToken }),
-    [user, loading]
+  return (
+    <AuthCtx.Provider value={{ user, loading, getIdToken, signInGoogle, signOutUser }}>
+      {children}
+    </AuthCtx.Provider>
   );
-
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
-}
-
-export function useAuth() {
-  const v = useContext(Ctx);
-  if (!v) throw new Error("useAuth must be used inside <AuthProvider>");
-  return v;
 }
