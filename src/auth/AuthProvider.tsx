@@ -3,6 +3,7 @@ import { auth, googleProvider } from "../lib/firebase";
 import {
   onAuthStateChanged,
   signInWithRedirect,
+  signInWithPopup,
   signOut as fbSignOut,
   type User,
 } from "firebase/auth";
@@ -32,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInGoogle = async () => {
     // redirect flow is more reliable across browsers/adblockers
-    await signInWithRedirect(auth, googleProvider);
+    await signInWithPopup(auth, googleProvider);
   };
 
   const signOutUser = async () => {

@@ -1,4 +1,4 @@
-package main.java.com.stacktrack.api;
+package com.stacktrack.api;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
