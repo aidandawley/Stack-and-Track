@@ -1,74 +1,53 @@
 package com.stacktrack.api;
 
+import com.stacktrack.collections.CollectionItem;
+import com.stacktrack.collections.CollectionsFsService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
-import com.stacktrack.model.Collection;
-import com.stacktrack.repo.CollectionRepository;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/collections")
-@CrossOrigin(origins = "http://localhost:5173")
-
 public class CollectionController {
 
-    private final CollectionRepository repo;
+    private final CollectionsFsService svc;
 
-    public CollectionController(CollectionRepository repo) {
-        this.repo = repo;
+    public CollectionController(CollectionsFsService svc) {
+        this.svc = svc;
     }
 
-    // ---- helpers ----
-    private String requireUid(String authHdr) {
-        if (authHdr == null || !authHdr.startsWith("Bearer ")) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing token");
+    private String requireUid(String bearer) throws Exception {
+        if (bearer == null || !bearer.startsWith("Bearer ")) {
+            throw new RuntimeException("Missing bearer token");
         }
-        String idToken = authHdr.substring(7);
-        try {
-            FirebaseToken decoded = FirebaseAuth.getInstance().verifyIdToken(idToken);
-            return decoded.getUid();
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
-        }
+        String idToken = bearer.substring("Bearer ".length());
+        FirebaseToken tok = FirebaseAuth.getInstance().verifyIdToken(idToken);
+        return tok.getUid();
     }
 
-    // ---- GET: list current user's collections ----
     @GetMapping
-    public List<Collection> list(
-            @RequestHeader(value = "Authorization", required = false) String authHdr) {
-        String uid = requireUid(authHdr);
-        return repo.findByUidOrderByCreatedAtDesc(uid);
-    }
-
-    // ---- POST: create a new collection for the current user ----
-    public record CreateReq(String name) {
+    public ResponseEntity<List<CollectionItem>> list(
+            @RequestHeader("Authorization") String auth) throws Exception {
+        String uid = requireUid(auth);
+        return ResponseEntity.ok(svc.list(uid));
     }
 
     @PostMapping
-    public Map<String, Object> create(
-            @RequestHeader(value = "Authorization", required = false) String authHdr,
-            @RequestBody CreateReq body) {
-        String uid = requireUid(authHdr);
-        if (body == null || body.name() == null || body.name().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "name is required");
+    public ResponseEntity<CollectionItem> create(
+            @RequestHeader("Authorization") String auth,
+            @RequestBody CreateReq body) throws Exception {
+        String uid = requireUid(auth);
+        String name = body != null ? body.name() : "";
+        if (name == null || name.isBlank()) {
+            return ResponseEntity.badRequest().build();
         }
+        return ResponseEntity.ok(svc.create(uid, name.trim()));
+    }
 
-        Collection c = new Collection();
-        c.setUid(uid);
-        c.setName(body.name().trim());
-        c.setCreatedAt(Instant.now());
-        Collection saved = repo.save(c);
-
-        return Map.of(
-                "id", saved.getId(),
-                "name", saved.getName(),
-                "uid", saved.getUid(),
-                "createdAt", saved.getCreatedAt().toString());
+    // simple request DTO
+    public record CreateReq(String name) {
     }
 }
