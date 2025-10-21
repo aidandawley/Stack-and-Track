@@ -32,7 +32,7 @@ export default function App() {
         }
       />
 
-      {/* Home redirects once loading is done */}
+    
       <Route
         path="/"
         element={
@@ -46,7 +46,7 @@ export default function App() {
         }
       />
 
-      {/* 404 -> Collections (or Login if not authed) */}
+    
       <Route
         path="*"
         element={<Navigate to={user ? "/collections" : "/login"} replace />}
