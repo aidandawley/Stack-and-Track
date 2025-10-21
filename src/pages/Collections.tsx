@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useAuth } from "../auth/AuthProvider";
+import { Link } from "react-router-dom";
 
 type Collection = { id: string; name: string; createdAt: string };
 
@@ -69,15 +70,25 @@ export default function Collections() {
       </section>
 
       <section className="grid">
-        {items.map(c => (
-          <a key={c.id} href={`/collections/${c.id}`} className="card neon" style={{ padding:16 }}>
-            <div className="row" style={{ justifyContent:"space-between" }}>
-              <strong style={{ fontSize:18 }}>{c.name}</strong>
-              <span className="tag">{new Date(c.createdAt).toLocaleString()}</span>
-            </div>
-            <p style={{ color:"var(--color-muted)", marginTop:8, marginBottom:0 }}>Open collection →</p>
-          </a>
-        ))}
+      {items.map(c => (
+  <Link
+    key={c.id}
+    to={`/collections/${c.id}`}
+    className="card neon"
+    style={{ padding:16 }}
+  >
+    <div className="row" style={{ justifyContent:"space-between" }}>
+      <strong style={{ fontSize:18 }}>{c.name}</strong>
+      <span className="tag">
+        {new Date(c.createdAt).toLocaleString()}
+      </span>
+    </div>
+    <p style={{ color:"var(--color-muted)", marginTop:8, marginBottom:0 }}>
+      Open collection →
+    </p>
+  </Link>
+))}
+
         {!busy && items.length === 0 && (
           <div className="tile" style={{ padding:24 }}>
             No collections yet. Create your first above!
