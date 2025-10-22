@@ -7,6 +7,15 @@ const API = (
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
 ).replace(/\/+$/, "");
 
+type SearchItem = {
+  id: string;
+  name: string;
+  setName: string;
+  imageSmall: string;
+  priceUSD: number | null;
+  priceUpdatedAt: string | null;
+};
+
 export default function CollectionPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -14,6 +23,12 @@ export default function CollectionPage() {
 
   const [busy, setBusy] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
+
+  // --- search state ---
+  const [query, setQuery] = React.useState("");
+  const [results, setResults] = React.useState<SearchItem[]>([]);
+  const [searching, setSearching] = React.useState(false);
+  const [searchErr, setSearchErr] = React.useState<string | null>(null);
 
   // Helper to build auth headers
   const authHeaders = React.useCallback(async (): Promise<HeadersInit> => {
@@ -34,6 +49,42 @@ export default function CollectionPage() {
       ignore = true;
     };
   }, [id]);
+
+  // Debounced search effect
+  React.useEffect(() => {
+    const q = query.trim();
+    if (q.length < 2) {
+      setResults([]);
+      setSearching(false);
+      setSearchErr(null);
+      return;
+    }
+
+    let aborted = false;
+    const t = setTimeout(async () => {
+      try {
+        setSearching(true);
+        setSearchErr(null);
+        const url = `${API}/api/search/catalog?q=${encodeURIComponent(q)}&limit=10`;
+        const r = await fetch(url, { headers: await authHeaders() });
+        if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+        const data = (await r.json()) as SearchItem[];
+        if (!aborted) setResults(Array.isArray(data) ? data : []);
+      } catch (e: any) {
+        if (!aborted) {
+          setSearchErr(e?.message || String(e));
+          setResults([]);
+        }
+      } finally {
+        if (!aborted) setSearching(false);
+      }
+    }, 300); // debounce ~300ms
+
+    return () => {
+      aborted = true;
+      clearTimeout(t);
+    };
+  }, [query, API, authHeaders]);
 
   const handleDelete = React.useCallback(async () => {
     if (!id) return;
@@ -91,6 +142,85 @@ export default function CollectionPage() {
       <p style={{ color: "var(--color-muted)" }}>
         Collection ID: <code>{id}</code>
       </p>
+
+      {/* --- Search box + results panel --- */}
+      <section style={{ marginTop: 16 }}>
+        <label
+          htmlFor="card-search"
+          style={{ display: "block", marginBottom: 8, color: "var(--color-muted)" }}
+        >
+          Search cards to add
+        </label>
+
+        <input
+          id="card-search"
+          className="input"
+          placeholder="Type at least 2 characters…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          autoComplete="off"
+        />
+
+        {(query.trim().length >= 2) && (
+          <div className="card" style={{ marginTop: 10, padding: 10 }}>
+            {searching && <div style={{ padding: 12 }}>Searching…</div>}
+            {searchErr && (
+              <div style={{ padding: 12, color: "#f88" }}>
+                Search error: {searchErr}
+              </div>
+            )}
+            {!searching && !searchErr && results.length === 0 && (
+              <div style={{ padding: 12, color: "var(--color-muted)" }}>
+                No results.
+              </div>
+            )}
+            {!searching && results.length > 0 && (
+              <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+                {results.map((r) => (
+                  <li
+                    key={r.id}
+                    className="tile"
+                    style={{
+                      display: "flex",
+                      gap: 12,
+                      alignItems: "center",
+                      padding: 8,
+                      marginBottom: 6,
+                    }}
+                  >
+                    <img
+                      src={r.imageSmall}
+                      alt=""
+                      width={48}
+                      height={68}
+                      style={{
+                        borderRadius: 8,
+                        objectFit: "cover",
+                        background: "#111",
+                      }}
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700 }}>{r.name}</div>
+                      <div style={{ fontSize: ".9rem", color: "var(--color-muted)" }}>
+                        {r.setName}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: "right", minWidth: 80 }}>
+                      <div style={{ fontWeight: 700 }}>
+                        {r.priceUSD != null ? `$${r.priceUSD.toFixed(2)}` : "—"}
+                      </div>
+                    </div>
+                    {/* We'll wire this “Add” action next */}
+                    <button className="btn btn--primary" disabled>
+                      Add
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </section>
 
       {/* TODO: render collection items here */}
     </main>
