@@ -17,10 +17,10 @@ export default function Login() {
     <main className="screen center">
       <div className="card login-card">
       <img
-  src={logoUrl}
-  alt="Stack & Track logo"
-  className="login-logo"
-/>
+        src={logoUrl}
+        alt="Stack & Track logo"
+        className="login-logo"
+      />
         <h1 className="title">Welcome to Stack &amp; Track</h1>
         <button
           type="button"
