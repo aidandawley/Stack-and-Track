@@ -14,7 +14,7 @@ export default function Collections() {
   const [name, setName] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
-
+    
   const authHeaders = React.useCallback(async (): Promise<HeadersInit> => {
     const h = new Headers();
     const t = await getIdToken();

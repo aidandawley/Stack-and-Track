@@ -17,29 +17,35 @@ public class SearchController {
         this.pokemon = pokemon;
     }
 
+    @GetMapping("/ping")
+    public String ping() {
+        return "ok";
+    }
+
     @GetMapping("/catalog")
     public ResponseEntity<List<SearchItem>> catalog(
             @RequestParam("q") String q,
-            @RequestParam(value = "limit", defaultValue = "10") int limit) {
+            @RequestParam(value = "limit", defaultValue = "10") int limit,
+            @RequestParam(value = "setName", required = false) String setName) {
         try {
-            if (q == null || q.isBlank())
+            if (q == null || q.isBlank()) {
                 return ResponseEntity.badRequest().build();
-            List<SearchItem> items = pokemon.search(q.trim(), limit);
+            }
+
+            String combined = q.trim();
+            if (setName != null && !setName.isBlank()) {
+                combined = combined + " AND set.name:\"" + setName.trim().replace("\"", "\\\"") + "\"";
+            }
+            int safeLimit = Math.min(Math.max(limit, 1), 50);
+            System.out.println("[SearchController] combined='" + combined + "', limit=" + safeLimit);
+
+            List<SearchItem> items = pokemon.search(combined, safeLimit);
             return ResponseEntity.ok(items);
         } catch (Exception e) {
-            e.printStackTrace(); // <-- keep for now so we can see upstream issues
-            // Temporary mock so we can proceed with the UI
-            List<SearchItem> mock = List.of(
-                    new SearchItem("sv1-1", "Sprigatito", "Scarlet & Violet",
-                            "https://images.pokemontcg.io/sv1/1.png", 0.35, "2025-10-20T00:00:00Z"),
-                    new SearchItem("sv1-2", "Floragato", "Scarlet & Violet",
-                            "https://images.pokemontcg.io/sv1/2.png", 0.45, "2025-10-20T00:00:00Z"));
-            return ResponseEntity.ok(mock);
+            // bubble a clear signal to the client
+            return ResponseEntity.status(502)
+                    .header("X-Debug-Msg", e.getClass().getSimpleName() + ": " + e.getMessage())
+                    .build();
         }
-    }
-
-    @GetMapping("/ping")
-    public ResponseEntity<String> ping() {
-        return ResponseEntity.ok("ok");
     }
 }
