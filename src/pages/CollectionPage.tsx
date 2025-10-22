@@ -34,6 +34,24 @@ export default function CollectionPage() {
   const [addingId, setAddingId] = React.useState<string | null>(null);
   const [addedId, setAddedId] = React.useState<string | null>(null);
 
+  // --- delete state ---
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
+
+    //save item state
+    type SavedItem = {
+        id: string;         
+        cardId: string;     
+        name: string | null;
+        setName: string | null;
+        imageSmall: string | null;
+        priceUSD: number | null;
+        priceUpdatedAt: string | null;
+        addedAt: string | null; 
+    };
+    
+    const [items, setItems] = React.useState<SavedItem[]>([]);
+    const [itemsLoading, setItemsLoading] = React.useState(true);
+    const [itemsErr, setItemsErr] = React.useState<string | null>(null);
 
   // Helper to build auth headers
   const authHeaders = React.useCallback(async (): Promise<HeadersInit> => {
@@ -54,6 +72,27 @@ export default function CollectionPage() {
       ignore = true;
     };
   }, [id]);
+
+  React.useEffect(() => {
+    let aborted = false;
+    (async () => {
+      if (!id) return;
+      setItemsLoading(true);
+      setItemsErr(null);
+      try {
+        const url = `${API}/api/collections/${encodeURIComponent(id)}/items`;
+        const r = await fetch(url, { headers: await authHeaders() });
+        if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+        const data = (await r.json()) as SavedItem[];
+        if (!aborted) setItems(Array.isArray(data) ? data : []);
+      } catch (e: any) {
+        if (!aborted) setItemsErr(e.message || String(e));
+      } finally {
+        if (!aborted) setItemsLoading(false);
+      }
+    })();
+    return () => { aborted = true; };
+  }, [id, API, authHeaders]);
 
   // Debounced search effect
   React.useEffect(() => {
@@ -145,6 +184,8 @@ export default function CollectionPage() {
         const text = await r.text();
         throw new Error(text || `${r.status} ${r.statusText}`);
       }
+      const saved = (await r.json()) as SavedItem;  
+    setItems((prev) => [saved, ...prev]);          
       setAddedId(item.id);
     } catch (e: any) {
       setErr(e.message || String(e));
@@ -155,6 +196,21 @@ export default function CollectionPage() {
   }, [API, id, authHeaders]);
   
   
+  const handleDeleteItem = React.useCallback(async (itemId: string) => {
+    if (!id) return;
+    setDeletingId(itemId);
+    try {
+      const url = `${API}/api/collections/${encodeURIComponent(id)}/items/${encodeURIComponent(itemId)}`;
+      const r = await fetch(url, { method: "DELETE", headers: await authHeaders() });
+      if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+      setItems((prev) => prev.filter((it) => it.id !== itemId));
+    } catch (e: any) {
+      setErr(e.message || String(e));
+    } finally {
+      setDeletingId(null);
+    }
+  }, [API, id, authHeaders]);
+
   return (
     <main className="container">
       <header className="header">
@@ -271,7 +327,57 @@ export default function CollectionPage() {
         )}
       </section>
 
-      {/* TODO: render collection items here */}
+      <section style={{ marginTop: 24 }}>
+  <h3 style={{ margin: "0 0 8px" }}>Items in this collection</h3>
+
+  {itemsLoading && <div className="card" style={{ padding: 12 }}>Loading…</div>}
+  {itemsErr && <div style={{ color: "#f88", marginTop: 8 }}>{itemsErr}</div>}
+
+  {!itemsLoading && items.length === 0 && (
+    <div className="card" style={{ padding: 12, color: "var(--color-muted)" }}>
+      No items yet — try adding one from the search above.
+    </div>
+  )}
+
+  {items.length > 0 && (
+    <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+      {items.map((it) => (
+        <li key={it.id}
+            className="tile"
+            style={{ display: "flex", gap: 12, alignItems: "center", padding: 8, marginBottom: 6 }}>
+          <img
+            src={it.imageSmall || ""}
+            alt=""
+            width={48}
+            height={68}
+            style={{ borderRadius: 8, objectFit: "cover", background: "#111" }}
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
+          />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 700 }}>{it.name ?? "(Unnamed card)"}</div>
+            <div style={{ fontSize: ".9rem", color: "var(--color-muted)" }}>
+              {it.setName ?? ""}
+            </div>
+          </div>
+          <div style={{ textAlign: "right", minWidth: 80 }}>
+            <div style={{ fontWeight: 700 }}>
+              {it.priceUSD != null ? `$${it.priceUSD.toFixed(2)}` : "—"}
+            </div>
+          </div>
+          <button
+            className="btn btn--danger"
+            onClick={() => handleDeleteItem(it.id)}
+            disabled={deletingId === it.id}
+            title="Remove from collection"
+          >
+            {deletingId === it.id ? "Removing…" : "×"}
+          </button>
+        </li>
+      ))}
+    </ul>
+  )}
+</section>
+
     </main>
   );
 }

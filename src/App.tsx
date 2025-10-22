@@ -1,5 +1,4 @@
 // src/App.tsx
-import * as React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Collections from "./pages/Collections";

@@ -88,4 +88,29 @@ public class CollectionsFsService {
                 addedAt);
     }
 
+    public List<CollectionCardItem> listItems(String uid, String collectionId) throws Exception {
+        CollectionReference itemsRef = colRefForUser(uid).document(collectionId).collection("items");
+        ApiFuture<QuerySnapshot> fut = itemsRef.orderBy("addedAt", Query.Direction.DESCENDING).get();
+
+        List<CollectionCardItem> out = new ArrayList<>();
+        for (QueryDocumentSnapshot d : fut.get().getDocuments()) {
+            String id = d.getId();
+            String cardId = d.getString("cardId");
+            String name = d.getString("name");
+            String setName = d.getString("setName");
+            String imageSmall = d.getString("imageSmall");
+            Double priceUSD = d.contains("priceUSD") ? d.getDouble("priceUSD") : null;
+            String priceUpdatedAt = d.getString("priceUpdatedAt");
+            Timestamp ts = d.getTimestamp("addedAt");
+            Instant addedAt = ts != null ? ts.toDate().toInstant() : Instant.EPOCH;
+
+            out.add(new CollectionCardItem(id, cardId, name, setName, imageSmall, priceUSD, priceUpdatedAt, addedAt));
+        }
+        return out;
+    }
+
+    public void deleteItem(String uid, String collectionId, String itemId) throws Exception {
+        colRefForUser(uid).document(collectionId).collection("items").document(itemId).delete().get();
+    }
+
 }

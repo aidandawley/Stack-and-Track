@@ -109,4 +109,25 @@ public class CollectionController {
     private static String safe(String s) {
         return (s == null || s.isBlank()) ? null : s.trim();
     }
+
+    // GET /api/collections/{collectionId}/items
+    @GetMapping("/{collectionId}/items")
+    public ResponseEntity<List<CollectionCardItem>> listItems(
+            @RequestHeader("Authorization") String auth,
+            @PathVariable String collectionId) throws Exception {
+        String uid = requireUid(auth);
+        return ResponseEntity.ok(svc.listItems(uid, collectionId));
+    }
+
+    // DELETE /api/collections/{collectionId}/items/{itemId}
+    @DeleteMapping("/{collectionId}/items/{itemId}")
+    public ResponseEntity<Void> deleteItem(
+            @RequestHeader("Authorization") String auth,
+            @PathVariable String collectionId,
+            @PathVariable String itemId) throws Exception {
+        String uid = requireUid(auth);
+        svc.deleteItem(uid, collectionId, itemId);
+        return ResponseEntity.noContent().build();
+    }
+
 }
