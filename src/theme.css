@@ -166,3 +166,13 @@
   .btn:active { transform: translateY(0); }
   .container { padding: 24px; }
   
+  /* Make the login logo responsive and smaller */
+.login-logo{
+  display:block;
+  max-width: 420px;   /* cap size (tweak to taste) */
+  width: 100%;        /* shrink to fit the card on small screens */
+  height: auto;       /* keep aspect ratio */
+  margin: 0 auto 16px;
+  border-radius: 12px;          /* optional */
+  /* aspect-ratio: 16 / 6; */   /* optional, if you want a fixed shape */
+}

@@ -1,7 +1,9 @@
-// src/pages/Login.tsx
+import * as React from "react";
 import { useAuth } from "../auth/AuthProvider";
 import { useNavigate } from "react-router-dom";
-import * as React from "react";
+
+
+import logoUrl from "../assets/Logo.png";
 
 export default function Login() {
   const { signInGoogle, loading, user } = useAuth();
@@ -14,7 +16,11 @@ export default function Login() {
   return (
     <main className="screen center">
       <div className="card login-card">
-        <div className="logo-box">LOGO</div>
+      <img
+  src={logoUrl}
+  alt="Stack & Track logo"
+  className="login-logo"
+/>
         <h1 className="title">Welcome to Stack &amp; Track</h1>
         <button
           type="button"
