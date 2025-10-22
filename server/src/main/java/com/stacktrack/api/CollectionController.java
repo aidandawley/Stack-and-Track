@@ -4,6 +4,7 @@ package com.stacktrack.api;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import com.stacktrack.collections.CollectionItem;
+import com.stacktrack.collections.CollectionCardItem;
 import com.stacktrack.collections.CollectionsFsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -60,5 +61,52 @@ public class CollectionController {
         String uid = requireUid(auth);
         svc.delete(uid, id);
         return ResponseEntity.noContent().build();
+    }
+
+    // ====== ITEMS ======
+
+    // Request payload for adding an item (tiny snapshot as discussed)
+    public record AddItemReq(
+            String id, // required: PokemonTCG.io card id (e.g., "sv1-1")
+            String name,
+            String setName,
+            String imageSmall,
+            Double priceUSD,
+            String priceUpdatedAt) {
+    }
+
+    // ------ POST /api/collections/{collectionId}/items ------
+    @PostMapping("/{collectionId}/items")
+    public ResponseEntity<CollectionCardItem> addItem(
+            @RequestHeader("Authorization") String auth,
+            @PathVariable String collectionId,
+            @RequestBody AddItemReq body) {
+        try {
+            String uid = requireUid(auth);
+            if (body == null || body.id == null || body.id.isBlank()) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            var toSave = new CollectionCardItem(
+                    null,
+                    body.id().trim(),
+                    safe(body.name()),
+                    safe(body.setName()),
+                    safe(body.imageSmall()),
+                    body.priceUSD(),
+                    safe(body.priceUpdatedAt()),
+                    null // addedAt set by serverTimestamp
+            );
+
+            var saved = svc.addItem(uid, collectionId, toSave);
+            return ResponseEntity.ok(saved);
+        } catch (Exception e) {
+            // You can log e.printStackTrace() here if you want diagnostics
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    private static String safe(String s) {
+        return (s == null || s.isBlank()) ? null : s.trim();
     }
 }

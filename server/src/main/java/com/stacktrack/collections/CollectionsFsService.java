@@ -37,7 +37,6 @@ public class CollectionsFsService {
         return out;
     }
 
-    // ***** This is the method your controller is trying to call *****
     public CollectionItem create(String uid, String name) throws Exception {
         Map<String, Object> data = Map.of(
                 "name", name,
@@ -54,4 +53,39 @@ public class CollectionsFsService {
     public void delete(String uid, String id) throws Exception {
         colRefForUser(uid).document(id).delete().get();
     }
+
+    public CollectionCardItem addItem(String uid, String collectionId, CollectionCardItem item) throws Exception {
+        CollectionReference itemsRef = colRefForUser(uid)
+                .document(collectionId)
+                .collection("items");
+
+        // map to Firestore fields
+        var data = new java.util.HashMap<String, Object>();
+        data.put("cardId", item.getCardId());
+        data.put("name", item.getName());
+        data.put("setName", item.getSetName());
+        data.put("imageSmall", item.getImageSmall());
+        data.put("priceUSD", item.getPriceUSD());
+        data.put("priceUpdatedAt", item.getPriceUpdatedAt());
+        data.put("addedAt", FieldValue.serverTimestamp());
+
+        DocumentReference ref = itemsRef.document(); // auto id
+        ref.set(data).get();
+
+        // read back to resolve serverTimestamp
+        DocumentSnapshot snap = ref.get().get();
+        com.google.cloud.Timestamp ts = snap.getTimestamp("addedAt");
+        java.time.Instant addedAt = ts != null ? ts.toDate().toInstant() : java.time.Instant.now();
+
+        return new CollectionCardItem(
+                ref.getId(),
+                item.getCardId(),
+                item.getName(),
+                item.getSetName(),
+                item.getImageSmall(),
+                item.getPriceUSD(),
+                item.getPriceUpdatedAt(),
+                addedAt);
+    }
+
 }

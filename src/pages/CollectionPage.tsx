@@ -30,6 +30,11 @@ export default function CollectionPage() {
   const [searching, setSearching] = React.useState(false);
   const [searchErr, setSearchErr] = React.useState<string | null>(null);
 
+  // --- adding state ---
+  const [addingId, setAddingId] = React.useState<string | null>(null);
+  const [addedId, setAddedId] = React.useState<string | null>(null);
+
+
   // Helper to build auth headers
   const authHeaders = React.useCallback(async (): Promise<HeadersInit> => {
     const h = new Headers();
@@ -112,6 +117,44 @@ export default function CollectionPage() {
     }
   }, [API, id, authHeaders, navigate]);
 
+  const handleAdd = React.useCallback(async (item: SearchItem) => {
+    if (!id) return;
+    setAddingId(item.id);
+    setErr(null);
+    try {
+      const url = `${API}/api/collections/${encodeURIComponent(id)}/items`;
+  
+     
+      const headers = new Headers(await authHeaders());
+      headers.set("Content-Type", "application/json");
+  
+      const r = await fetch(url, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          id: item.id,
+          name: item.name,
+          setName: item.setName,
+          imageSmall: item.imageSmall,
+          priceUSD: item.priceUSD,
+          priceUpdatedAt: item.priceUpdatedAt,
+        }),
+      });
+  
+      if (!r.ok) {
+        const text = await r.text();
+        throw new Error(text || `${r.status} ${r.statusText}`);
+      }
+      setAddedId(item.id);
+    } catch (e: any) {
+      setErr(e.message || String(e));
+    } finally {
+      setAddingId(null);
+      setTimeout(() => setAddedId(null), 1500);
+    }
+  }, [API, id, authHeaders]);
+  
+  
   return (
     <main className="container">
       <header className="header">
@@ -211,9 +254,15 @@ export default function CollectionPage() {
                       </div>
                     </div>
                     {/* We'll wire this “Add” action next */}
-                    <button className="btn btn--primary" disabled>
-                      Add
+                    <button
+                        className="btn btn--primary"
+                        onClick={() => handleAdd(r)}
+                        disabled={!id || addingId === r.id}
+                        title={addedId === r.id ? "Added!" : "Add to collection"}
+                        >
+                        {addedId === r.id ? "Added ✓" : (addingId === r.id ? "Adding…" : "Add")}
                     </button>
+
                   </li>
                 ))}
               </ul>
