@@ -1,0 +1,191 @@
+[
+  {
+    "id": "base1-4",
+    "name": "Charizard",
+    "setId": "base1",
+    "setName": "Base Set",
+    "number": "4",
+    "imageSmall": "https://images.pokemontcg.io/base1/4.png",
+    "imageLarge": "https://images.pokemontcg.io/base1/4_hires.png"
+  },
+  {
+    "id": "base1-2",
+    "name": "Blastoise",
+    "setId": "base1",
+    "setName": "Base Set",
+    "number": "2",
+    "imageSmall": "https://images.pokemontcg.io/base1/2.png",
+    "imageLarge": "https://images.pokemontcg.io/base1/2_hires.png"
+  },
+  {
+    "id": "base1-15",
+    "name": "Venusaur",
+    "setId": "base1",
+    "setName": "Base Set",
+    "number": "15",
+    "imageSmall": "https://images.pokemontcg.io/base1/15.png",
+    "imageLarge": "https://images.pokemontcg.io/base1/15_hires.png"
+  },
+  {
+    "id": "base1-58",
+    "name": "Pikachu",
+    "setId": "base1",
+    "setName": "Base Set",
+    "number": "58",
+    "imageSmall": "https://images.pokemontcg.io/base1/58.png",
+    "imageLarge": "https://images.pokemontcg.io/base1/58_hires.png"
+  },
+  {
+    "id": "base2-4",
+    "name": "Snorlax",
+    "setId": "base2",
+    "setName": "Jungle",
+    "number": "11",
+    "imageSmall": "https://images.pokemontcg.io/base2/11.png",
+    "imageLarge": "https://images.pokemontcg.io/base2/11_hires.png"
+  },
+  {
+    "id": "base2-1",
+    "name": "Clefable",
+    "setId": "base2",
+    "setName": "Jungle",
+    "number": "1",
+    "imageSmall": "https://images.pokemontcg.io/base2/1.png",
+    "imageLarge": "https://images.pokemontcg.io/base2/1_hires.png"
+  },
+  {
+    "id": "base3-4",
+    "name": "Dragonite",
+    "setId": "base3",
+    "setName": "Fossil",
+    "number": "4",
+    "imageSmall": "https://images.pokemontcg.io/base3/4.png",
+    "imageLarge": "https://images.pokemontcg.io/base3/4_hires.png"
+  },
+  {
+    "id": "base3-2",
+    "name": "Articuno",
+    "setId": "base3",
+    "setName": "Fossil",
+    "number": "2",
+    "imageSmall": "https://images.pokemontcg.io/base3/2.png",
+    "imageLarge": "https://images.pokemontcg.io/base3/2_hires.png"
+  },
+  {
+    "id": "neo1-9",
+    "name": "Lugia",
+    "setId": "neo1",
+    "setName": "Neo Genesis",
+    "number": "9",
+    "imageSmall": "https://images.pokemontcg.io/neo1/9.png",
+    "imageLarge": "https://images.pokemontcg.io/neo1/9_hires.png"
+  },
+  {
+    "id": "neo1-4",
+    "name": "Feraligatr",
+    "setId": "neo1",
+    "setName": "Neo Genesis",
+    "number": "4",
+    "imageSmall": "https://images.pokemontcg.io/neo1/4.png",
+    "imageLarge": "https://images.pokemontcg.io/neo1/4_hires.png"
+  },
+  {
+    "id": "xy12-12",
+    "name": "Nidoking",
+    "setId": "xy12",
+    "setName": "XY\u2014Evolutions",
+    "number": "45",
+    "imageSmall": "https://images.pokemontcg.io/xy12/45.png",
+    "imageLarge": "https://images.pokemontcg.io/xy12/45_hires.png"
+  },
+  {
+    "id": "xy12-13",
+    "name": "Mewtwo",
+    "setId": "xy12",
+    "setName": "XY\u2014Evolutions",
+    "number": "51",
+    "imageSmall": "https://images.pokemontcg.io/xy12/51.png",
+    "imageLarge": "https://images.pokemontcg.io/xy12/51_hires.png"
+  },
+  {
+    "id": "sm1-1",
+    "name": "Decidueye",
+    "setId": "sm1",
+    "setName": "Sun & Moon",
+    "number": "12",
+    "imageSmall": "https://images.pokemontcg.io/sm1/12.png",
+    "imageLarge": "https://images.pokemontcg.io/sm1/12_hires.png"
+  },
+  {
+    "id": "sm1-5",
+    "name": "Incineroar",
+    "setId": "sm1",
+    "setName": "Sun & Moon",
+    "number": "24",
+    "imageSmall": "https://images.pokemontcg.io/sm1/24.png",
+    "imageLarge": "https://images.pokemontcg.io/sm1/24_hires.png"
+  },
+  {
+    "id": "swsh1-1",
+    "name": "Celebi V",
+    "setId": "swsh1",
+    "setName": "Sword & Shield",
+    "number": "1",
+    "imageSmall": "https://images.pokemontcg.io/swsh1/1.png",
+    "imageLarge": "https://images.pokemontcg.io/swsh1/1_hires.png"
+  },
+  {
+    "id": "swsh1-9",
+    "name": "Lapras V",
+    "setId": "swsh1",
+    "setName": "Sword & Shield",
+    "number": "49",
+    "imageSmall": "https://images.pokemontcg.io/swsh1/49.png",
+    "imageLarge": "https://images.pokemontcg.io/swsh1/49_hires.png"
+  },
+  {
+    "id": "sv1-1",
+    "name": "Sprigatito",
+    "setId": "sv1",
+    "setName": "Scarlet & Violet",
+    "number": "1",
+    "imageSmall": "https://images.pokemontcg.io/sv1/1.png",
+    "imageLarge": "https://images.pokemontcg.io/sv1/1_hires.png"
+  },
+  {
+    "id": "sv1-2",
+    "name": "Floragato",
+    "setId": "sv1",
+    "setName": "Scarlet & Violet",
+    "number": "2",
+    "imageSmall": "https://images.pokemontcg.io/sv1/2.png",
+    "imageLarge": "https://images.pokemontcg.io/sv1/2_hires.png"
+  },
+  {
+    "id": "sv1-3",
+    "name": "Meowscarada ex",
+    "setId": "sv1",
+    "setName": "Scarlet & Violet",
+    "number": "15",
+    "imageSmall": "https://images.pokemontcg.io/sv1/15.png",
+    "imageLarge": "https://images.pokemontcg.io/sv1/15_hires.png"
+  },
+  {
+    "id": "sv2-1",
+    "name": "Tropius",
+    "setId": "sv2",
+    "setName": "Paldea Evolved",
+    "number": "1",
+    "imageSmall": "https://images.pokemontcg.io/sv2/1.png",
+    "imageLarge": "https://images.pokemontcg.io/sv2/1_hires.png"
+  },
+  {
+    "id": "sv2-15",
+    "name": "Pikachu",
+    "setId": "sv2",
+    "setName": "Paldea Evolved",
+    "number": "76",
+    "imageSmall": "https://images.pokemontcg.io/sv2/76.png",
+    "imageLarge": "https://images.pokemontcg.io/sv2/76_hires.png"
+  }
+]

@@ -1,35 +1,55 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// src/App.tsx
+import { Routes, Route, Navigate } from "react-router-dom";
+import Login from "./pages/Login";
+import Collections from "./pages/Collections";
+import CollectionPage from "./pages/CollectionPage";
+import ProtectedRoute from "./auth/ProtectedRoute";
+import { useAuth } from "./auth/AuthProvider";
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const { user, loading } = useAuth();
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <Routes>
+      <Route path="/login" element={<Login />} />
 
-export default App
+      <Route
+        path="/collections"
+        element={
+          <ProtectedRoute>
+            <Collections />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/collections/:id"
+        element={
+          <ProtectedRoute>
+            <CollectionPage />
+          </ProtectedRoute>
+        }
+      />
+
+    
+      <Route
+        path="/"
+        element={
+          loading ? (
+            <div style={{ padding: 24 }}>Loading…</div>
+          ) : user ? (
+            <Navigate to="/collections" replace />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+
+    
+      <Route
+        path="*"
+        element={<Navigate to={user ? "/collections" : "/login"} replace />}
+      />
+    </Routes>
+  );
+}

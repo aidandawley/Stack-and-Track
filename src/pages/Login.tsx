@@ -1,27 +1,35 @@
-// src/pages/Login.tsx
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import * as React from "react";
 import { useAuth } from "../auth/AuthProvider";
+import { useNavigate } from "react-router-dom";
+
+
+import logoUrl from "../assets/Logo.png";
 
 export default function Login() {
-  const { signInGoogle } = useAuth();
+  const { signInGoogle, loading, user } = useAuth();
   const nav = useNavigate();
 
-  const doSignIn = async () => {
-    try {
-      await signInGoogle();          // popup completes here
-      nav("/", { replace: true });   // go to the app
-    } catch (e) {
-      console.error("Sign-in failed:", e);
-    }
-  };
+  React.useEffect(() => {
+    if (!loading && user) nav("/", { replace: true });
+  }, [loading, user, nav]);
 
   return (
-    <main style={{ minHeight: "100vh", display: "grid", placeItems: "center" }}>
-      <div style={{ padding: 24, border: "1px solid #ddd", borderRadius: 12 }}>
-        <h1>Stack & Track — Sign in</h1>
-        <p style={{ color: "#666" }}>Continue with Google.</p>
-        <button onClick={doSignIn}>Continue with Google</button>
+    <main className="screen center">
+      <div className="card login-card">
+      <img
+        src={logoUrl}
+        alt="Stack & Track logo"
+        className="login-logo"
+      />
+        <h1 className="title">Welcome to Stack &amp; Track</h1>
+        <button
+          type="button"
+          className="btn primary"
+          onClick={() => { void signInGoogle(); }}
+          disabled={loading}
+        >
+          {loading ? "Checking session..." : "Sign in with Google"}
+        </button>
       </div>
     </main>
   );
