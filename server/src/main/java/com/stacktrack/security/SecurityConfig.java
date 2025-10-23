@@ -19,18 +19,26 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOrigins(List.of(
+
+        // Use patterns so *.web.app / *.firebaseapp.com are allowed
+        cfg.setAllowedOriginPatterns(List.of(
                 "http://localhost:5173",
                 "http://127.0.0.1:5173",
-                "https://stack-and-track-77f80.web.app",
-                "https://stack-and-track-77f80.firebaseapp.com",
-                "https://stackandtrack.app"));
+                "https://*.web.app",
+                "https://*.firebaseapp.com",
+                "https://stackandtrack.app" // your custom domain (keep if/when you use it)
+        ));
+
         cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        cfg.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        // Accept typical headers + any others your browser may send
+        cfg.setAllowedHeaders(List.of("*"));
+        // Only set this if your frontend actually sends credentials (it does for
+        // Firebase ID token)
         cfg.setAllowCredentials(true);
-        cfg.setMaxAge(3600L);
+        cfg.setMaxAge(3600L); // cache preflight
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // Apply to everything; you can narrow to "/api/**" if you prefer
         source.registerCorsConfiguration("/**", cfg);
         return source;
     }
@@ -41,7 +49,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
+                        // allow preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // everything else is open (your endpoints do their own auth with Firebase
+                        // tokens)
                         .anyRequest().permitAll())
                 .httpBasic(b -> b.disable())
                 .formLogin(f -> f.disable());
